@@ -24,7 +24,6 @@ init_state_index() ->
 
 %%% setup throttling for a specific scope
 setup(Scope, RateLimit, RatePeriod) ->
-  %% TODO start child in supervisor
   {ok, _Pid} = supervisor:start_child(throttle_sup, [Scope, RateLimit, RatePeriod]),
   ok.
 
@@ -68,7 +67,8 @@ interval(per_second) ->
 init_counters(Scope, Limit, Period) ->
   TableId = ets:new(scope_counters, [set, public]),
 
-  ets:insert(?STATE_TABLE, {Scope, TableId, Limit, Period, timestamp()}),
+  %% add + 1 to allow up to (including) that number
+  ets:insert(?STATE_TABLE, {Scope, TableId, Limit + 1, Period, timestamp()}),
   {ok, _} = timer:send_interval(interval(Period), reset_counters),
   ok.
 
@@ -90,10 +90,15 @@ update_counter(Scope, Key) ->
 lookup_counter(Scope, Key) ->
   [{Scope, TableId, Limit, Period, PreviousReset}] = ets:lookup(?STATE_TABLE, Scope),
   NextReset = interval(Period) - (timestamp() - PreviousReset),
-  [{Key, Count}] = ets:lookup(TableId, Key),
-  {Count, Limit, NextReset}.
 
-count_result({Count, Count, NextReset}) ->
+  case ets:lookup(TableId, Key) of
+    [{Key, Count}] ->
+      {Count, Limit, NextReset};
+    [] ->
+      {0, Limit, NextReset}
+  end.
+
+count_result({Count, Limit, NextReset}) when Count == Limit ->
     {limit_exceeded, NextReset};
 count_result({Count, Limit, NextReset}) ->
-    {ok, Limit - Count, NextReset}.
+    {ok, Limit - Count - 1, NextReset}.
