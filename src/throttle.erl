@@ -99,6 +99,6 @@ lookup_counter(Scope, Key) ->
   end.
 
 count_result({Count, Limit, NextReset}) when Count == Limit ->
-    {limit_exceeded, NextReset};
+    {limit_exceeded, 0, NextReset};
 count_result({Count, Limit, NextReset}) ->
     {ok, Limit - Count - 1, NextReset}.

@@ -20,5 +20,5 @@ ok
 5> throttle:check(my_api_endpoint, my_token_or_ip).
 {ok,0,27978}
 6> throttle:check(my_api_endpoint, my_token_or_ip).
-{limit_exceeded,26722}
+{limit_exceeded,0,26722}
 ```
