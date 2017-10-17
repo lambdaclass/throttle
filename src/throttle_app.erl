@@ -1,8 +1,3 @@
-%%%-------------------------------------------------------------------
-%% @doc throttle public API
-%% @end
-%%%-------------------------------------------------------------------
-
 -module(throttle_app).
 
 -behaviour(application).
@@ -10,19 +5,20 @@
 %% Application callbacks
 -export([start/2, stop/1]).
 
-%%====================================================================
-%% API
-%%====================================================================
-
 start(_StartType, _StartArgs) ->
-  %% TODO read rates from application:get_env
-  %% call throttle:setup for each one
-  throttle_sup:start_link().
+  {ok, Pid} = throttle_sup:start_link(),
 
-%%--------------------------------------------------------------------
+  case application:get_env(throttle, rates) of
+    {ok, Rates} ->
+      lists:foreach(fun({Scope, Limit, Period}) ->
+                        throttle:setup(Scope, Limit, Period)
+                    end, Rates);
+    _ ->
+      ok
+  end,
+  {ok, Pid}.
+
+
+
 stop(_State) ->
   ok.
-
-%%====================================================================
-%% Internal functions
-%%====================================================================
