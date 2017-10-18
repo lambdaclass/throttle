@@ -10,7 +10,8 @@ all() ->
    test_keys_not_mixed,
    test_minute,
    test_hour,
-   test_day].
+   test_day,
+   rate_not_set].
 
 init_per_suite(Config) ->
   {ok, _Apps} = application:ensure_all_started(throttle),
@@ -94,5 +95,10 @@ test_day(_Config) ->
 
   Diff = 1000 * 60 * 60 * 24 - TimeToReset,
   true = Diff < 1000,
+
+  ok.
+
+rate_not_set(_Config) ->
+  rate_not_set = throttle:check(didnt_set, <<"john">>),
 
   ok.

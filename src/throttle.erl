@@ -79,26 +79,36 @@ reset_counters(Scope) ->
   ok.
 
 update_counter(Scope, Key) ->
-  [{Scope, TableId, Limit, Period, PreviousReset}] = ets:lookup(?STATE_TABLE, Scope),
-  NextReset = interval(Period) - (timestamp() - PreviousReset),
+  case ets:lookup(?STATE_TABLE, Scope) of
+    [{Scope, TableId, Limit, Period, PreviousReset}] ->
+      NextReset = interval(Period) - (timestamp() - PreviousReset),
 
-  %% add 1 to counter in position 2, if it's less or equal than Limit, default counter to 0
-  Count = ets:update_counter(TableId, Key, {2, 1, Limit, Limit}, {Key, 0}),
+      %% add 1 to counter in position 2, if it's less or equal than Limit, default counter to 0
+      Count = ets:update_counter(TableId, Key, {2, 1, Limit, Limit}, {Key, 0}),
 
-  {Count, Limit, NextReset}.
-
-lookup_counter(Scope, Key) ->
-  [{Scope, TableId, Limit, Period, PreviousReset}] = ets:lookup(?STATE_TABLE, Scope),
-  NextReset = interval(Period) - (timestamp() - PreviousReset),
-
-  case ets:lookup(TableId, Key) of
-    [{Key, Count}] ->
       {Count, Limit, NextReset};
     [] ->
-      {0, Limit, NextReset}
-  end.
+      rate_not_set
+end.
+
+lookup_counter(Scope, Key) ->
+  case ets:lookup(?STATE_TABLE, Scope) of
+    [{Scope, TableId, Limit, Period, PreviousReset}] ->
+      NextReset = interval(Period) - (timestamp() - PreviousReset),
+
+      case ets:lookup(TableId, Key) of
+        [{Key, Count}] ->
+          {Count, Limit, NextReset};
+        [] ->
+          {0, Limit, NextReset}
+      end;
+    [] ->
+      rate_not_set
+end.
 
 count_result({Count, Limit, NextReset}) when Count == Limit ->
     {limit_exceeded, 0, NextReset};
 count_result({Count, Limit, NextReset}) ->
-    {ok, Limit - Count - 1, NextReset}.
+    {ok, Limit - Count - 1, NextReset};
+count_result(rate_not_set) ->
+  rate_not_set.
