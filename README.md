@@ -1,4 +1,4 @@
-# throttle
+# throttle [![Build Status](https://travis-ci.org/lambdaclass/throttle.svg?branch=master)](https://travis-ci.org/lambdaclass/throttle)
 
 An OTP application to implement throttling/rate limiting of resources.
 
