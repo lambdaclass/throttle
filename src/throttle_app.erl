@@ -6,7 +6,9 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
-  {ok, Pid} = throttle_sup:start_link(),
+  %% other single node options: throttle_ets_drop, throttl_ets_single
+  Driver = application:get_env(throttle, driver, throttle_ets_delete),
+  Driver:init(),
 
   case application:get_env(throttle, rates) of
     {ok, Rates} ->
@@ -16,9 +18,7 @@ start(_StartType, _StartArgs) ->
     _ ->
       ok
   end,
-  {ok, Pid}.
-
-
+  throttle_sup:start_link().
 
 stop(_State) ->
   ok.

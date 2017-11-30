@@ -23,8 +23,6 @@ start_link() ->
 %% Supervisor callbacks
 
 init([]) ->
-  throttle:init_state_index(),
-
   {ok, { #{ strategy => simple_one_for_one, intensity => 5, period => 1 },
          [#{
              id => throttle,
