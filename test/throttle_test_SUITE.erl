@@ -3,21 +3,30 @@
 
 -compile(export_all).
 
-all() ->
-  [test_limit,
-   test_peek,
-   test_scopes_not_mixed,
-   test_keys_not_mixed,
-   test_minute,
-   test_hour,
-   test_day,
-   rate_not_set].
+-define(ALL_TESTS, [test_limit,
+                    test_peek,
+                    test_scopes_not_mixed,
+                    test_keys_not_mixed,
+                    test_minute,
+                    test_hour,
+                    test_day,
+                    rate_not_set]).
 
-init_per_suite(Config) ->
+%% we want to repeat the same suit with the different drivers
+groups() ->
+  [{throttle_ets_delete, [], ?ALL_TESTS},
+   {throttle_ets_drop, [], ?ALL_TESTS}].
+
+all() ->
+  [{group, throttle_ets_delete},
+   {group, throttle_ets_drop}].
+
+init_per_group(Driver, Config) ->
+  ok = application:set_env(throttle, driver, Driver),
   {ok, _Apps} = application:ensure_all_started(throttle),
   Config.
 
-end_per_suite(_Config) ->
+end_per_group(_Driver, _Config) ->
   ok = application:stop(throttle),
   ok = application:unload(throttle).
 

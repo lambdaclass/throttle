@@ -6,7 +6,6 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
-  %% other single node options: throttle_ets_drop, throttl_ets_single
   Driver = application:get_env(throttle, driver, throttle_ets_delete),
   Driver:init(),
 
