@@ -15,11 +15,13 @@
 %% we want to repeat the same suit with the different drivers
 groups() ->
   [{throttle_ets_delete, [], ?ALL_TESTS},
-   {throttle_ets_drop, [], ?ALL_TESTS}].
+   {throttle_ets_drop, [], ?ALL_TESTS},
+   {throttle_ets_match, [], ?ALL_TESTS}].
 
 all() ->
   [{group, throttle_ets_delete},
-   {group, throttle_ets_drop}].
+   {group, throttle_ets_drop},
+   {group, throttle_ets_match}].
 
 init_per_group(Driver, Config) ->
   ok = application:set_env(throttle, driver, Driver),
