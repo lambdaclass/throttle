@@ -6,6 +6,7 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
+  %% start supervisor first so its available when calling throttle:setup
   {ok, Pid} = throttle_sup:start_link(),
 
   case application:get_env(throttle, rates) of
@@ -17,8 +18,6 @@ start(_StartType, _StartArgs) ->
       ok
   end,
   {ok, Pid}.
-
-
 
 stop(_State) ->
   ok.

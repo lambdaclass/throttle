@@ -23,7 +23,8 @@ start_link() ->
 %% Supervisor callbacks
 
 init([]) ->
-  throttle:init_state_index(),
+  Driver = application:get_env(throttle, driver, throttle_ets),
+  Driver:init(),
 
   {ok, { #{ strategy => simple_one_for_one, intensity => 5, period => 1 },
          [#{
