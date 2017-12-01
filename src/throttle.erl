@@ -55,7 +55,6 @@ driver_call(F, A) ->
   Driver = application:get_env(throttle, driver, throttle_ets_delete),
   apply(Driver, F, A).
 
-%% TODO i'm not sure this should be here
 interval(per_day) ->
   1000 * 60 * 60 * 24;
 interval(per_hour) ->

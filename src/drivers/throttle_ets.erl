@@ -25,7 +25,6 @@ reset_counters(Scope) ->
   true = ets:insert(?STATE_TABLE, {Scope, TableId, Limit, Period, timestamp()}),
   ok.
 
-%% TODO make sure interval makes sense here or can be factored out to the server
 update_counter(Scope, Key) ->
   case ets:lookup(?STATE_TABLE, Scope) of
     [{Scope, TableId, Limit, Period, PreviousReset}] ->

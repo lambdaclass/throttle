@@ -36,7 +36,7 @@ test_limit(_Config) ->
   {ok, 0, _} = throttle:check(test_rate, <<"john">>),
   {limit_exceeded, 0, _} = throttle:check(test_rate, <<"john">>),
 
-  timer:sleep(1001),
+  timer:sleep(1100),
 
   {ok, 2, _} = throttle:check(test_rate, <<"john">>),
 
