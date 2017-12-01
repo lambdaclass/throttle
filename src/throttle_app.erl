@@ -6,8 +6,8 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
-  Driver = application:get_env(throttle, driver, throttle_ets_delete),
-  Driver:init(),
+  %% start supervisor first so its available when calling throttle:setup
+  {ok, Pid} = throttle_sup:start_link(),
 
   case application:get_env(throttle, rates) of
     {ok, Rates} ->
@@ -17,7 +17,7 @@ start(_StartType, _StartArgs) ->
     _ ->
       ok
   end,
-  throttle_sup:start_link().
+  {ok, Pid}.
 
 stop(_State) ->
   ok.

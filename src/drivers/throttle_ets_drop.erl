@@ -28,6 +28,7 @@ reset_counters(Scope) ->
 
 %% TODO make sure interval makes sense here or can be factored out to the server
 update_counter(Scope, Key) ->
+  %% FIXME it can happen that we get a TableId but it isn't available anymore when we try to update counter
   case ets:lookup(?STATE_TABLE, Scope) of
     [{Scope, TableId, Limit, Period, PreviousReset}] ->
       NextReset = throttle:interval(Period) - (timestamp() - PreviousReset),
@@ -41,6 +42,7 @@ update_counter(Scope, Key) ->
   end.
 
 lookup_counter(Scope, Key) ->
+  %% FIXME it can happen that we get a TableId but it isn't available anymore when we try to update counter
   case ets:lookup(?STATE_TABLE, Scope) of
     [{Scope, TableId, Limit, Period, PreviousReset}] ->
       NextReset = throttle:interval(Period) - (timestamp() - PreviousReset),
