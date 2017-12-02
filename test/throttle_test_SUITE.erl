@@ -14,10 +14,19 @@
 
 %% we want to repeat the same suit with the different drivers
 groups() ->
-  [{throttle_ets, [], ?ALL_TESTS}].
+  [{throttle_ets, [], ?ALL_TESTS},
+   {throttle_mnesia, [], ?ALL_TESTS}].
 
 all() ->
-  [{group, throttle_ets}].
+  [{group, throttle_ets},
+   {group, throttle_mnesia}].
+
+init_per_suite(Config) ->
+  application:ensure_all_started(lager),
+  Config.
+
+end_per_suite(Config) ->
+  ok.
 
 init_per_group(Driver, Config) ->
   ok = application:set_env(throttle, driver, Driver),
