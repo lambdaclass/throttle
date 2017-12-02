@@ -42,7 +42,7 @@ init_counters(Scope, Limit, Period) ->
                  ok = mnesia:write(#scope_state{scope=Scope,
                                                 limit=Limit + 1, %% add + 1 to allow up to (including) that number
                                                 period=Period,
-                                                previous_reset=timestamp()})
+                                                previous_reset=throttle_time:now()})
              end,
 
   mnesia:activity(transaction, AddScope).
@@ -53,13 +53,13 @@ reset_counters(Scope) ->
 
   %% update last reset timestamp
   [State] = mnesia:dirty_read(scope_state, Scope),
-  NewState = State#scope_state{previous_reset=timestamp()},
+  NewState = State#scope_state{previous_reset=throttle_time:now()},
   ok = mnesia:dirty_write(scope_state, NewState).
 
 update_counter(Scope, Key) ->
   case mnesia:dirty_read(scope_state, Scope) of
     [#scope_state{limit=Limit, period=Period, previous_reset=PreviousReset}] ->
-      NextReset = throttle:interval(Period) - (timestamp() - PreviousReset),
+      NextReset = throttle_time:next_reset(Period, PreviousReset),
 
       %% TODO should we wrap this in an activity and let the user configure what access context to use?
       Count = mnesia:dirty_update_counter(Scope, Key, 1),
@@ -73,7 +73,7 @@ update_counter(Scope, Key) ->
 lookup_counter(Scope, Key) ->
   case mnesia:dirty_read(scope_state, Scope) of
     [#scope_state{limit=Limit, period=Period, previous_reset=PreviousReset}] ->
-      NextReset = throttle:interval(Period) - (timestamp() - PreviousReset),
+      NextReset = throttle_time:next_reset(Period, PreviousReset),
 
       case mnesia:dirty_read(Scope, Key) of
         [{Scope, Key, Count}] ->
@@ -84,8 +84,3 @@ lookup_counter(Scope, Key) ->
     [] ->
       rate_not_set
   end.
-
-%%% Internal functions
-%% FIXME if always the same move to utils or throttle.erl
-timestamp() ->
-  erlang:system_time(millisecond).
