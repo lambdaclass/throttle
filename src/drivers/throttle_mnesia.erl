@@ -8,7 +8,7 @@
          lookup_counter/2
         ]).
 
--record(scope_state, {scope, limit, period, previous_reset}).
+-record(scope_state, {scope, limit, period, previous_reset, access_context}).
 
 init() ->
   %% intially this will be called by the sup and every node will get its local
@@ -19,17 +19,17 @@ init() ->
   OtherNodes = nodes(),
 
   case application:start(mnesia) of
-    {error, {already_started, mnesia}} ->
-      %% not the first time, add new nodes
-      rpc:multicall(OtherNodes, application, stop, [mnesia]),
-      rpc:multicall(OtherNodes, application, start, [mnesia]),
-      mnesia:change_config(extra_db_nodes, AllNodes);
     ok ->
       %% first time, create state table
       {atomic, ok} = mnesia:create_table(scope_state,
                                          [{attributes, record_info(fields, scope_state)},
                                           {ram_copies, AllNodes},
-                                          {type, set}])
+                                          {type, set}]);
+    {error, {already_started, mnesia}} ->
+      %% not the first time, add new nodes
+      rpc:multicall(OtherNodes, application, stop, [mnesia]),
+      rpc:multicall(OtherNodes, application, start, [mnesia]),
+      mnesia:change_config(extra_db_nodes, AllNodes)
   end,
   ok.
 
@@ -38,17 +38,18 @@ init_counters(Scope, Limit, Period) ->
   {atomic, ok} = mnesia:create_table(Scope, [{ram_copies, [node() | nodes()]},
                                              {type, set}]),
 
+  AccessContext = application:get_env(throttle, access_context, async_dirty),
   AddScope = fun() ->
                  ok = mnesia:write(#scope_state{scope=Scope,
                                                 limit=Limit + 1, %% add + 1 to allow up to (including) that number
                                                 period=Period,
-                                                previous_reset=throttle_time:now()})
+                                                previous_reset=throttle_time:now(),
+                                                access_context=AccessContext})
              end,
 
   mnesia:activity(transaction, AddScope).
 
 reset_counters(Scope) ->
-  %% clear counters
   {atomic, ok} = mnesia:clear_table(Scope),
 
   %% update last reset timestamp
@@ -58,11 +59,17 @@ reset_counters(Scope) ->
 
 update_counter(Scope, Key) ->
   case mnesia:dirty_read(scope_state, Scope) of
-    [#scope_state{limit=Limit, period=Period, previous_reset=PreviousReset}] ->
+    [#scope_state{limit=Limit,
+                  period=Period,
+                  previous_reset=PreviousReset,
+                  access_context=AccessContext}] ->
       NextReset = throttle_time:next_reset(Period, PreviousReset),
 
-      %% TODO should we wrap this in an activity and let the user configure what access context to use?
-      Count = mnesia:dirty_update_counter(Scope, Key, 1),
+      UpdateCounter = fun() ->
+                          mnesia:dirty_update_counter(Scope, Key, 1)
+                      end,
+
+      Count = mnesia:activity(AccessContext, UpdateCounter),
       LimitedCount = min(Limit, Count),
 
       {LimitedCount, Limit, NextReset};
