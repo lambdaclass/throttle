@@ -31,6 +31,51 @@ The application allows to limit different resources (scopes) at different rates.
 * `throttle:peek(Scope, Key)`: returns the same result as `check`
   without increasing the requests count.
 
+### Distributed support
+
+By default, throttle keeps the attempt counters on ETS tables, and
+therefore those are local to the Erlang node. Mnesia can be used
+instead to enfore access limits across all connected nodes, by setting
+the `driver` configuration parameter to `throttle_mnesia`:
+
+``` erlang
+{throttle, [{driver, throttle_mnesia},
+            {rates, [{my_global_scope, 10, per_second}]}]}
+```
+
+When using the Mnesia driver, `throttle_mnesia:init()` needs to be
+called after the cluster is connected (the tables have to be shared across
+nodes, so the nodes must be visible before intialization):
+
+``` erlang
+(n1@127.0.0.1)1> application:set_env(throttle, driver, throttle_mnesia).
+ok
+(n1@127.0.0.1)2> application:ensure_all_started(throttle).
+{ok,[throttle]}
+(n1@127.0.0.1)3> net_kernel:connect('n2@127.0.0.1').
+true
+(n1@127.0.0.1)4> throttle_mnesia:init().
+ok
+```
+
+When checking for a Key to access a given Scope, an access counter is
+incremented in Mnesia. The
+[activity access context](http://learnyousomeerlang.com/mnesia#access-and-context)
+for that operation can be configured with the `access_context`
+parameter:
+
+``` erlang
+{throttle, [{driver, throttle_mnesia},
+            {access_context, sync_transaction}]}.
+```
+
+By default, the `async_dirty` context is used, which prioritizes speed
+over consistency when propagating the counter increment. This means
+there's a chance of two nodes getting access to a resource when there
+is one attempt left. Depending the application, it may make more
+sense to choose a different context (like `sync_transaction`) to
+reduce the chances of allowing accesses above the limit.
+
 ## Examples
 
 ### Shell
