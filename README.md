@@ -1,6 +1,12 @@
-# throttle [![Build Status](https://travis-ci.org/lambdaclass/throttle.svg?branch=master)](https://travis-ci.org/lambdaclass/throttle)
+# throttle [![Build Status](https://travis-ci.org/lambdaclass/throttle.svg?branch=master)](https://travis-ci.org/lambdaclass/throttle) [![Hex.pm](https://img.shields.io/hexpm/v/lambda_throttle.svg)](https://hex.pm/packages/lambda_throttle)
 
 An OTP application to implement throttling/rate limiting of resources.
+
+## Rebar3 dependency
+
+```erl
+{throttle, "0.1.0", {pkg, lambda_throttle}}
+```
 
 ## Build
 
