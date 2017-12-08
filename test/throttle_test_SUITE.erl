@@ -25,7 +25,7 @@ init_per_suite(Config) ->
   application:ensure_all_started(lager),
   Config.
 
-end_per_suite(Config) ->
+end_per_suite(_Config) ->
   ok.
 
 init_per_group(Driver, Config) ->

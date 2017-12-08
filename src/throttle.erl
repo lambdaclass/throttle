@@ -50,7 +50,7 @@ handle_cast(_Request, State) ->
 
 %%% Internal functions
 driver_call(F, A) ->
-  Driver = application:get_env(throttle, driver, throttle_ets_delete),
+  Driver = application:get_env(throttle, driver, throttle_ets),
   apply(Driver, F, A).
 
 count_result({Count, Limit, NextReset}) when Count == Limit ->
