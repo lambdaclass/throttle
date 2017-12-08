@@ -1,5 +1,6 @@
 {application, throttle,
- [{description, "An OTP application"},
+ [{description, "Erlang/OTP application to throttle/rate limit resource access"},
+  {pkg_name, lambda_throttle},
   {vsn, "0.1.0"},
   {registered, []},
   {mod, { throttle_app, []}},
@@ -11,6 +12,6 @@
   {modules, []},
 
   {maintainers, []},
-  {licenses, ["Apache 2.0"]},
-  {links, []}
+  {licenses, ["MIT"]},
+  {links, [{"Github", "https://github.com/lambdaclass/throttle"}]}
  ]}.
