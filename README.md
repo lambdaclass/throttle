@@ -1,4 +1,7 @@
-# throttle [![Build Status](https://travis-ci.org/lambdaclass/throttle.svg?branch=master)](https://travis-ci.org/lambdaclass/throttle) [![Hex.pm](https://img.shields.io/hexpm/v/lambda_throttle.svg)](https://hex.pm/packages/lambda_throttle)
+# throttle
+[![Hex.pm](https://img.shields.io/hexpm/v/lambda_throttle.svg)](https://hex.pm/packages/lambda_throttle)
+[![Build Status](https://travis-ci.org/lambdaclass/throttle.svg?branch=master)](https://travis-ci.org/lambdaclass/throttle)
+[![Coverage Status](https://coveralls.io/repos/github/lambdaclass/throttle/badge.svg?branch=master)](https://coveralls.io/github/lambdaclass/throttle?branch=master)
 
 An OTP application to implement throttling/rate limiting of resources.
 
