@@ -15,7 +15,7 @@ interval(per_minute) ->
   1000 * 60;
 interval(per_second) ->
   1000;
-interval(CustomMs) ->
+interval(CustomMs) when is_integer(CustomMs) ->
   CustomMs.
 
 next_reset(Period, Previous) ->
