@@ -1,7 +1,7 @@
 {application, throttle,
  [{description, "Erlang/OTP application to throttle/rate limit resource access"},
   {pkg_name, lambda_throttle},
-  {vsn, "0.1.0"},
+  {vsn, "0.2.0"},
   {registered, []},
   {mod, { throttle_app, []}},
   {applications,
