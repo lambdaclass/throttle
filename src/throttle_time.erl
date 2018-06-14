@@ -14,7 +14,9 @@ interval(per_hour) ->
 interval(per_minute) ->
   1000 * 60;
 interval(per_second) ->
-  1000.
+  1000;
+interval(CustomMs) when is_integer(CustomMs) ->
+  CustomMs.
 
 next_reset(Period, Previous) ->
   interval(Period) - (throttle_time:now() - Previous).
