@@ -10,6 +10,7 @@
                     test_minute,
                     test_hour,
                     test_day,
+                    test_custom_ms,
                     rate_not_set]).
 
 %% we want to repeat the same suit with the different drivers
@@ -110,6 +111,16 @@ test_day(_Config) ->
   {ok, 2, TimeToReset} = throttle:check(test_rate8, <<"john">>),
 
   Diff = 1000 * 60 * 60 * 24 - TimeToReset,
+  true = Diff < 1000,
+
+  ok.
+
+test_custom_ms(_Config) ->
+  throttle:setup(test_rate9, 3, 10000),
+
+  {ok, 2, TimeToReset} = throttle:check(test_rate9, <<"john">>),
+
+  Diff = 10000 - TimeToReset,
   true = Diff < 1000,
 
   ok.
