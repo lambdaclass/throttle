@@ -1,6 +1,6 @@
 %%
-%% This behavior defines the interface that throttle uses to interact with the
-%% different stores that track scope/key access counts.
+%% Interface to interact with the different stores that can track scope/key
+%% access counts.
 %%
 -module(throttle_driver).
 
@@ -16,7 +16,7 @@
 %% Performs scope-specific initialization of a scope.
 -callback initialize(throttle:scope(), throttle:rate_limit(), NextReset :: integer()) -> ok.
 
-%% Resets all the key counters for the scope back to zero.
+%% Resets all the key counters of the scope back to zero.
 -callback reset(throttle:scope(), NextReset :: integer()) -> ok.
 
 %% Increase the access count for the scope/key and return its current value.
