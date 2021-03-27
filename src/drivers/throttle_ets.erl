@@ -18,7 +18,8 @@ setup() ->
 initialize(Scope, Limit, NextReset) ->
   TableId = ets:new(scope_counters, [set, public]),
   %% add + 1 to allow up to (including) that number
-  ets:insert(?STATE_TABLE, {Scope, TableId, Limit + 1, NextReset}).
+  ets:insert(?STATE_TABLE, {Scope, TableId, Limit + 1, NextReset}),
+  ok.
 
 reset(Scope, NextReset) ->
   [{Scope, TableId, Limit, _PreviousReset}] = ets:lookup(?STATE_TABLE, Scope),
