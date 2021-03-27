@@ -37,13 +37,13 @@ start_link(Scope, Limit, Period) ->
   gen_server:start_link(?MODULE, {Scope, Limit, Period}, []).
 
 init({Scope, Limit, Period} = State) ->
-  NextReset = throttle_time:next_reset(Period),
+  NextReset = throttle_time:schedule_reset(Period),
   throttle_driver:initialize(Scope, Limit, NextReset),
   {ok, _} = timer:send_interval(throttle_time:interval(Period), reset_counters),
   {ok, State}.
 
 handle_info(reset_counters, {Scope, _Limit, Period} = State) ->
-  NextReset = throttle_time:next_reset(Period),
+  NextReset = throttle_time:schedule_reset(Period),
   throttle_driver:reset(Scope, NextReset),
   {noreply, State}.
 
@@ -55,10 +55,10 @@ handle_cast(_Request, State) ->
 
 %%% Internal functions
 count_result({Count, Limit, NextReset}) when Count == Limit ->
-  LeftToReset = throttle_time:left_to_reset(NextReset),
+  LeftToReset = throttle_time:left_til(NextReset),
   {limit_exceeded, 0, LeftToReset};
 count_result({Count, Limit, NextReset}) ->
-  LeftToReset = throttle_time:left_to_reset(NextReset),
+  LeftToReset = throttle_time:left_til(NextReset),
   {ok, Limit - Count - 1, LeftToReset};
 count_result(rate_not_set) ->
   rate_not_set.
