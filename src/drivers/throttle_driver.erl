@@ -1,3 +1,7 @@
+%%
+%% This behavior defines the interface that throttle uses to interact with the
+%% different stores that track scope/key access counts.
+%%
 -module(throttle_driver).
 
 -export([setup/0,
@@ -6,21 +10,24 @@
          update/2,
          lookup/2]).
 
-%% TODO doc
--callback init() -> ok.
+%% Performs any global (non scope-specific) setup required by the driver.
+-callback setup() -> ok.
 
-%% TODO doc
--callback init_counters(throttle:scope(), throttle:rate_limit(), throttle_time:interval()) -> ok.
+%% Performs scope-specific initialization of a scope.
+-callback initialize(throttle:scope(), throttle:rate_limit(), throttle_time:interval()) -> ok.
 
-%% TODO doc
--callback reset_counters(throttle:scope()) -> ok.
+%% Resets all the key counters for the scope back to zero.
+-callback reset(throttle:scope()) -> ok.
 
-%% TODO doc
 %% FIXME this should return PreviousReset and Period instead of forcing every driver to repeat that calculation
--callback update_counter(throttle:scope(), Key :: term()) ->
+%% it would probably be more appropriate to store the scope metadata elsewhere
+
+%% Increase the access count for the scope/key and return its current value.
+-callback update(throttle:scope(), Key :: term()) ->
     {Count :: pos_integer(), throttle:rate_limit(), NextReset :: integer()} | rate_not_set.
 
--callback lookup_counter(throttle:scope(), Key :: term()) ->
+%% Retrieve the current access count for the scope/key without increasing it.
+-callback lookup(throttle:scope(), Key :: term()) ->
     {Count :: pos_integer(), throttle:rate_limit(), NextReset :: integer()} | rate_not_set.
 
 setup() ->
