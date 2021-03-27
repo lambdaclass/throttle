@@ -26,11 +26,11 @@ setup(Scope, RateLimit, RatePeriod) ->
   ok.
 
 check(Scope, Key) ->
-  Result = driver_call(update_counter, [Scope, Key]),
+  Result = throttle_driver:update(Scope, Key),
   count_result(Result).
 
 peek(Scope, Key) ->
-  Result = driver_call(lookup_counter, [Scope, Key]),
+  Result = throttle_driver:lookup(Scope, Key),
   count_result(Result).
 
 %% Gen server callbacks
@@ -38,13 +38,13 @@ start_link(Scope, Limit, Period) ->
   gen_server:start_link(?MODULE, {Scope, Limit, Period}, []).
 
 init({Scope, Limit, Period} = State) ->
-  driver_call(init_counters, [Scope, Limit, Period]),
+  throttle_driver:initialize(Scope, Limit, Period),
   {ok, _} = timer:send_interval(throttle_time:interval(Period), reset_counters),
   {ok, State}.
 
 
 handle_info(reset_counters, {Scope, _Limit, _Period} = State) ->
-  driver_call(reset_counters, [Scope]),
+  throttle_driver:reset(Scope),
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
@@ -54,10 +54,6 @@ handle_cast(_Request, State) ->
   {noreply, State}.
 
 %%% Internal functions
-driver_call(F, A) ->
-  Driver = application:get_env(throttle, driver, throttle_ets),
-  apply(Driver, F, A).
-
 count_result({Count, Limit, NextReset}) when Count == Limit ->
     {limit_exceeded, 0, NextReset};
 count_result({Count, Limit, NextReset}) ->
