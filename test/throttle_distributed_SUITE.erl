@@ -55,7 +55,7 @@ start_throttle(Context) ->
   ok = application:set_env(throttle, driver, throttle_mnesia),
   ok = application:set_env(throttle, access_context, Context),
   {ok, _Apps} = application:ensure_all_started(throttle),
-  throttle_mnesia:init(),
+  throttle_mnesia:setup(),
   ok.
 
 test_limit(Config) ->

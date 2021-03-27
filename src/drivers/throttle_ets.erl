@@ -2,31 +2,31 @@
 
 -behavior(throttle_driver).
 
--export([init/0,
-         init_counters/3,
-         reset_counters/1,
-         update_counter/2,
-         lookup_counter/2]).
+-export([setup/0,
+         initialize/3,
+         reset/1,
+         update/2,
+         lookup/2]).
 
 -define(STATE_TABLE, throttle_state_table).
 
 %%% intialize the index table that tracks state for all the scopes
-init() ->
+setup() ->
   ets:new(?STATE_TABLE, [set, named_table, public]),
   ok.
 
-init_counters(Scope, Limit, Period) ->
+initialize(Scope, Limit, Period) ->
   TableId = ets:new(scope_counters, [set, public]),
   %% add + 1 to allow up to (including) that number
   ets:insert(?STATE_TABLE, {Scope, TableId, Limit + 1, Period, throttle_time:now()}).
 
-reset_counters(Scope) ->
+reset(Scope) ->
   [{Scope, TableId, Limit, Period, _PreviousReset}] = ets:lookup(?STATE_TABLE, Scope),
   true = ets:delete_all_objects(TableId),
   true = ets:insert(?STATE_TABLE, {Scope, TableId, Limit, Period, throttle_time:now()}),
   ok.
 
-update_counter(Scope, Key) ->
+update(Scope, Key) ->
   case ets:lookup(?STATE_TABLE, Scope) of
     [{Scope, TableId, Limit, Period, PreviousReset}] ->
       NextReset = throttle_time:next_reset(Period, PreviousReset),
@@ -39,7 +39,7 @@ update_counter(Scope, Key) ->
       rate_not_set
   end.
 
-lookup_counter(Scope, Key) ->
+lookup(Scope, Key) ->
   case ets:lookup(?STATE_TABLE, Scope) of
     [{Scope, TableId, Limit, Period, PreviousReset}] ->
       NextReset = throttle_time:next_reset(Period, PreviousReset),
