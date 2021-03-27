@@ -1,11 +1,12 @@
 -module(throttle_ets).
 
+-behavior(throttle_driver).
+
 -export([init/0,
          init_counters/3,
          reset_counters/1,
          update_counter/2,
-         lookup_counter/2
-        ]).
+         lookup_counter/2]).
 
 -define(STATE_TABLE, throttle_state_table).
 

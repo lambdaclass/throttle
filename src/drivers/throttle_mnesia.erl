@@ -1,5 +1,7 @@
 -module(throttle_mnesia).
 
+-behavior(throttle_driver).
+
 -export([
          init/0,
          init_counters/3,

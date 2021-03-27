@@ -13,6 +13,11 @@
          handle_info/2
         ]).
 
+-type scope() :: atom().
+-type rate_limit() :: pos_integer().
+
+-export_type([scope/0, rate_limit/0]).
+
 %% API functions
 
 %%% setup throttling for a specific scope

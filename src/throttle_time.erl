@@ -4,6 +4,9 @@
          interval/1,
          next_reset/2]).
 
+-type interval() :: per_day | per_hour | per_minute | per_second | pos_integer().
+-export_type([interval/0]).
+
 now() ->
   erlang:system_time(millisecond).
 
