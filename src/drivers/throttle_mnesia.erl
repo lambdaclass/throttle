@@ -5,12 +5,12 @@
 -export([
          setup/0,
          initialize/3,
-         reset/1,
+         reset/2,
          update/2,
          lookup/2
         ]).
 
--record(scope_state, {scope, limit, period, previous_reset, access_context}).
+-record(scope_state, {scope, limit, next_reset, access_context}).
 
 setup() ->
   %% intially this will be called by the sup and every node will get its local
@@ -35,7 +35,7 @@ setup() ->
   end,
   ok.
 
-initialize(Scope, Limit, Period) ->
+initialize(Scope, Limit, NextReset) ->
   %% counter table uses the default key/value
   {atomic, ok} = mnesia:create_table(Scope, [{ram_copies, [node() | nodes()]},
                                              {type, set}]),
@@ -44,28 +44,25 @@ initialize(Scope, Limit, Period) ->
   AddScope = fun() ->
                  ok = mnesia:write(#scope_state{scope=Scope,
                                                 limit=Limit + 1, %% add + 1 to allow up to (including) that number
-                                                period=Period,
-                                                previous_reset=throttle_time:now(),
+                                                next_reset=NextReset,
                                                 access_context=AccessContext})
              end,
 
   mnesia:activity(transaction, AddScope).
 
-reset(Scope) ->
+reset(Scope, NextReset) ->
   {atomic, ok} = mnesia:clear_table(Scope),
 
   %% update last reset timestamp
   [State] = mnesia:dirty_read(scope_state, Scope),
-  NewState = State#scope_state{previous_reset=throttle_time:now()},
+  NewState = State#scope_state{next_reset=NextReset},
   ok = mnesia:dirty_write(scope_state, NewState).
 
 update(Scope, Key) ->
   case mnesia:dirty_read(scope_state, Scope) of
     [#scope_state{limit=Limit,
-                  period=Period,
-                  previous_reset=PreviousReset,
+                  next_reset=NextReset,
                   access_context=AccessContext}] ->
-      NextReset = throttle_time:next_reset(Period, PreviousReset),
 
       UpdateCounter = fun() ->
                           mnesia:dirty_update_counter(Scope, Key, 1)
@@ -81,8 +78,7 @@ update(Scope, Key) ->
 
 lookup(Scope, Key) ->
   case mnesia:dirty_read(scope_state, Scope) of
-    [#scope_state{limit=Limit, period=Period, previous_reset=PreviousReset}] ->
-      NextReset = throttle_time:next_reset(Period, PreviousReset),
+    [#scope_state{limit=Limit, next_reset=NextReset}] ->
 
       case mnesia:dirty_read(Scope, Key) of
         [{Scope, Key, Count}] ->

@@ -10,8 +10,7 @@
          init/1,
          handle_call/3,
          handle_cast/2,
-         handle_info/2
-        ]).
+         handle_info/2]).
 
 -type scope() :: atom().
 -type rate_limit() :: pos_integer().
@@ -38,13 +37,14 @@ start_link(Scope, Limit, Period) ->
   gen_server:start_link(?MODULE, {Scope, Limit, Period}, []).
 
 init({Scope, Limit, Period} = State) ->
-  throttle_driver:initialize(Scope, Limit, Period),
+  NextReset = throttle_time:next_reset(Period),
+  throttle_driver:initialize(Scope, Limit, NextReset),
   {ok, _} = timer:send_interval(throttle_time:interval(Period), reset_counters),
   {ok, State}.
 
-
-handle_info(reset_counters, {Scope, _Limit, _Period} = State) ->
-  throttle_driver:reset(Scope),
+handle_info(reset_counters, {Scope, _Limit, Period} = State) ->
+  NextReset = throttle_time:next_reset(Period),
+  throttle_driver:reset(Scope, NextReset),
   {noreply, State}.
 
 handle_call(_Request, _From, State) ->
@@ -55,8 +55,10 @@ handle_cast(_Request, State) ->
 
 %%% Internal functions
 count_result({Count, Limit, NextReset}) when Count == Limit ->
-    {limit_exceeded, 0, NextReset};
+  LeftToReset = throttle_time:left_to_reset(NextReset),
+  {limit_exceeded, 0, LeftToReset};
 count_result({Count, Limit, NextReset}) ->
-    {ok, Limit - Count - 1, NextReset};
+  LeftToReset = throttle_time:left_to_reset(NextReset),
+  {ok, Limit - Count - 1, LeftToReset};
 count_result(rate_not_set) ->
   rate_not_set.

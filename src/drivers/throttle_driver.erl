@@ -6,7 +6,7 @@
 
 -export([setup/0,
          initialize/3,
-         reset/1,
+         reset/2,
          update/2,
          lookup/2]).
 
@@ -14,13 +14,10 @@
 -callback setup() -> ok.
 
 %% Performs scope-specific initialization of a scope.
--callback initialize(throttle:scope(), throttle:rate_limit(), throttle_time:interval()) -> ok.
+-callback initialize(throttle:scope(), throttle:rate_limit(), NextReset :: integer()) -> ok.
 
 %% Resets all the key counters for the scope back to zero.
--callback reset(throttle:scope()) -> ok.
-
-%% FIXME this should return PreviousReset and Period instead of forcing every driver to repeat that calculation
-%% it would probably be more appropriate to store the scope metadata elsewhere
+-callback reset(throttle:scope(), NextReset :: integer()) -> ok.
 
 %% Increase the access count for the scope/key and return its current value.
 -callback update(throttle:scope(), Key :: term()) ->
@@ -34,13 +31,13 @@ setup() ->
     Module = callback_module(),
     Module:setup().
 
-initialize(Scope, Limit, Period) ->
+initialize(Scope, Limit, NextReset) ->
     Module = callback_module(),
-    Module:initialize(Scope, Limit, Period).
+    Module:initialize(Scope, Limit, NextReset).
 
-reset(Scope) ->
+reset(Scope, NextReset) ->
     Module = callback_module(),
-    Module:reset(Scope).
+    Module:reset(Scope, NextReset).
 
 update(Scope, Key) ->
     Module = callback_module(),

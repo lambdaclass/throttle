@@ -2,7 +2,8 @@
 
 -export([now/0,
          interval/1,
-         next_reset/2]).
+         next_reset/1,
+         left_to_reset/1]).
 
 -type interval() :: per_day | per_hour | per_minute | per_second | pos_integer().
 -export_type([interval/0]).
@@ -21,5 +22,8 @@ interval(per_second) ->
 interval(CustomMs) when is_integer(CustomMs) ->
   CustomMs.
 
-next_reset(Period, Previous) ->
-  interval(Period) - (throttle_time:now() - Previous).
+next_reset(Period) ->
+  throttle_time:now() + interval(Period).
+
+left_to_reset(NextReset) ->
+  NextReset - throttle_time:now().
