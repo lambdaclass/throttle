@@ -1,6 +1,9 @@
 language: erlang
 otp_release:
-  - 20.0
+  - 21
+  - 22
+  - 23
+  
 
 script:
   - make travis_test
