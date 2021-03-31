@@ -52,7 +52,7 @@ the `driver` configuration parameter to `throttle_mnesia`:
             {rates, [{my_global_scope, 10, per_second}]}]}
 ```
 
-When using the Mnesia driver, `throttle_mnesia:init()` needs to be
+When using the Mnesia driver, `throttle_mnesia:setup()` needs to be
 called after the cluster is connected (the tables have to be shared across
 nodes, so the nodes must be visible before intialization):
 
@@ -63,7 +63,7 @@ ok
 {ok,[throttle]}
 (n1@127.0.0.1)3> net_kernel:connect('n2@127.0.0.1').
 true
-(n1@127.0.0.1)4> throttle_mnesia:init().
+(n1@127.0.0.1)4> throttle_mnesia:setup().
 ok
 ```
 
