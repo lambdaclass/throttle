@@ -8,7 +8,7 @@ An OTP application to implement throttling/rate limiting of resources.
 ## Rebar3 dependency
 
 ```erl
-{throttle, "0.2.0", {pkg, lambda_throttle}}
+{throttle, "0.3.0", {pkg, lambda_throttle}}
 ```
 
 ## Build
