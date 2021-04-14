@@ -28,7 +28,7 @@ reset(Scope, NextReset) ->
   ok.
 
 update(Scope, Key) ->
-  case ets:lookup(?STATE_TABLE, Scope) of
+  try ets:lookup(?STATE_TABLE, Scope) of
     [{Scope, TableId, Limit, NextReset}] ->
 
       %% add 1 to counter in position 2, if it's less or equal than Limit, default counter to 0
@@ -36,6 +36,9 @@ update(Scope, Key) ->
 
       {Count, Limit, NextReset};
     [] ->
+      rate_not_set
+  catch
+    error:badarg ->
       rate_not_set
   end.
 

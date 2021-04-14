@@ -11,7 +11,8 @@
                     test_hour,
                     test_day,
                     test_custom_ms,
-                    rate_not_set]).
+                    rate_not_set,
+                    owner_process_died]).
 
 %% we want to repeat the same suit with the different drivers
 groups() ->
@@ -127,5 +128,14 @@ test_custom_ms(_Config) ->
 
 rate_not_set(_Config) ->
   rate_not_set = throttle:check(didnt_set, <<"john">>),
+
+  ok.
+
+owner_process_died(_Config) ->
+  spawn(fun() ->
+    %% This is a new process which creates the rate
+    throttle:setup(test_rate10, 3, per_second)
+  end),
+  rate_not_set = throttle:check(test_rate10, <<"john">>),
 
   ok.
