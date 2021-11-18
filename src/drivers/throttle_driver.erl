@@ -7,7 +7,7 @@
 -export([setup/0,
          initialize/3,
          reset/2,
-         update/2,
+         update/3,
          lookup/2]).
 
 %% Performs any global (non scope-specific) setup required by the driver.
@@ -20,7 +20,7 @@
 -callback reset(throttle:scope(), NextReset :: integer()) -> ok.
 
 %% Increase the access count for the scope/key and return its current value.
--callback update(throttle:scope(), Key :: term()) ->
+-callback update(throttle:scope(), Key :: term(), Value :: pos_integer()) ->
     {Count :: pos_integer(), throttle:rate_limit(), NextReset :: integer()} | rate_not_set.
 
 %% Retrieve the current access count for the scope/key without increasing it.
@@ -39,9 +39,9 @@ reset(Scope, NextReset) ->
     Module = callback_module(),
     Module:reset(Scope, NextReset).
 
-update(Scope, Key) ->
+update(Scope, Key, Value) ->
     Module = callback_module(),
-    Module:update(Scope, Key).
+    Module:update(Scope, Key, Value).
 
 lookup(Scope, Key) ->
     Module = callback_module(),

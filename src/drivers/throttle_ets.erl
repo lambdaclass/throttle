@@ -5,7 +5,7 @@
 -export([setup/0,
          initialize/3,
          reset/2,
-         update/2,
+         update/3,
          lookup/2]).
 
 -define(STATE_TABLE, throttle_state_table).
@@ -27,12 +27,12 @@ reset(Scope, NextReset) ->
   true = ets:insert(?STATE_TABLE, {Scope, TableId, Limit, NextReset}),
   ok.
 
-update(Scope, Key) ->
+update(Scope, Key, Increment) ->
   case ets:lookup(?STATE_TABLE, Scope) of
     [{Scope, TableId, Limit, NextReset}] ->
 
-      %% add 1 to counter in position 2, if it's less or equal than Limit, default counter to 0
-      Count = ets:update_counter(TableId, Key, {2, 1, Limit, Limit}, {Key, 0}),
+      %% add `Increment' to counter in position 2, if it's less or equal than Limit, default counter to 0
+      Count = ets:update_counter(TableId, Key, {2, Increment, Limit, Limit}, {Key, 0}),
 
       {Count, Limit, NextReset};
     [] ->

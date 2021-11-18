@@ -6,7 +6,7 @@
          setup/0,
          initialize/3,
          reset/2,
-         update/2,
+         update/3,
          lookup/2
         ]).
 
@@ -58,14 +58,14 @@ reset(Scope, NextReset) ->
   NewState = State#scope_state{next_reset=NextReset},
   ok = mnesia:dirty_write(scope_state, NewState).
 
-update(Scope, Key) ->
+update(Scope, Key, Increment) ->
   case mnesia:dirty_read(scope_state, Scope) of
     [#scope_state{limit=Limit,
                   next_reset=NextReset,
                   access_context=AccessContext}] ->
 
       UpdateCounter = fun() ->
-                          mnesia:dirty_update_counter(Scope, Key, 1)
+                          mnesia:dirty_update_counter(Scope, Key, Increment)
                       end,
 
       Count = mnesia:activity(AccessContext, UpdateCounter),
