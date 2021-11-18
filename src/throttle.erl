@@ -4,6 +4,7 @@
 
 -export([setup/3,
          check/2,
+         update/3,
          peek/2,
 
          start_link/3,
@@ -25,7 +26,11 @@ setup(Scope, RateLimit, RatePeriod) ->
   ok.
 
 check(Scope, Key) ->
-  Result = throttle_driver:update(Scope, Key),
+  Result = throttle_driver:update(Scope, Key, 1),
+  count_result(Result).
+
+update(Scope, Key, Value) when is_integer(Value), Value > 0 ->
+  Result = throttle_driver:update(Scope, Key, Value),
   count_result(Result).
 
 peek(Scope, Key) ->

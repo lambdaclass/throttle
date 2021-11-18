@@ -37,7 +37,7 @@ init_per_group(AccessContext, Config) ->
           end,
   [{sleep, Sleep} | Config].
 
-end_per_group(_Context, Config) ->
+end_per_group(_Context, _Config) ->
   application:stop(throttle),
   ok.
 
